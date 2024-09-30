@@ -1,0 +1,183 @@
+
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'manage_student' %}">Manage Student</a></li>
+          <li class="breadcrumb-item active">Edit Student</li>
+        </ol>
+    </nav></h6>
+<h4>Edit Student |Username : {{ username }} | ID : {{ st_id }}</h4>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-12">
+            <!-- general form elements -->
+       <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">Edit Student Information</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+ <form role="form" action="{% url 'edit_student_save' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+            <div class="form-group col-md-12">
+                <img src="{{ user_profile_img }}" alt="Profile" id="upload-img" class="rounded-circle" width="160" height="160">
+                {{ form.profile_img }}
+                <span id="fileupload_label">{{ form.profile_img.initial.name }}</span>
+            </div>
+<!--              <div class="form-group col-md-12">-->
+<!--                 <div class="custom-img">-->
+
+<!--                    <img src="{{ user.profile_img }}" alt="Profile" id="upload-img" class="rounded-circle" width="160" height="160" >-->
+<!--                        {{form.profile_img }}-->
+<!--                  </div>-->
+<!--              </div>-->
+
+
+              <div class="form-group col-md-4">
+                 <label>User Name</label>
+                  {{form.username }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>First Name</label>
+                  {{form.first_name }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Middle Name</label>
+                  {{form.middle_name }}
+              </div>
+              <div class="form-group col-md-12">
+                 <label>Last Name</label>
+                  {{form.last_name }}
+              </div>
+              <div class="form-group col-md-6">
+                 <label>Email</label>
+                  {{form.email }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>DOB</label>
+                  {{form.dob }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>NIC</label>
+                  {{form.nic }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Student ID No</label>
+                  {{form.st_idNo }}
+              </div>
+              <div class="form-group col-md-12">
+                 <label>Address</label>
+                  {{form.adrz }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Gender</label>
+                  {{form.gender }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Mobile No</label>
+                  {{form.mobileNo }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Residental No</label>
+                  {{form.resiNo }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Civil Status</label>
+                  {{form.civil_status }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Nationality</label>
+                  {{form.nationality }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Educational Qualifications</label>
+                  {{form.edu_qualification }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Professional Qualifications</label>
+                  {{form.prof_qualification }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Other Qualifications</label>
+                  {{form.other_qualification }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Guardian Name</label>
+                  {{form.guardian_name }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Guardian Contact No</label>
+                  {{form.guardian_contNo }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Session Year</label>
+                  {{form.yr_id }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Batch</label>
+                  {{form.batch }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Trade</label>
+                  {{form.trade }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Course</label>
+                  {{form.course }}
+              </div>
+
+
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Save data">Update</button>
+             <button type="reset" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Clear data">Clear</button>
+          </div>
+        </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+    //Initialize Select2 Elements
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    })
+</script>
+{% endblock custom_js %}

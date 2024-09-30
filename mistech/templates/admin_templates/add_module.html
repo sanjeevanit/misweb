@@ -1,0 +1,185 @@
+
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Add Module</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-12">
+            <!-- general form elements -->
+       <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">Add Module Information</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+        <form role="form" action="{% url 'add_module_save' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="form-group col-md-4">
+                 <label>Module Name</label>
+                  {{form.mod_name }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Module Code</label>
+                  {{form.mod_code }}
+              </div>
+
+            <div class="form-group col-md-4">
+                <label>Academic Hours</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="duration_hours" name="duration_hours" >
+                    <button type="button" class="btn btn-outline-secondary" onclick="incrementValue('duration_hours')">+</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="decrementValue('duration_hours')">-</button>
+                </div>
+            </div>
+
+            <div class="form-group col-md-4">
+                <label>Academic Week</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="academic_weeks" name="academic_weeks" >
+                    <button type="button" class="btn btn-outline-secondary" onclick="incrementValue('academic_weeks')">+</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="decrementValue('academic_weeks')">-</button>
+                </div>
+            </div>
+
+              <div class="form-group col-md-4">
+                 <label>course</label>
+                  {{form.course }}
+              </div>
+
+              <div class="form-group col-md-4">
+                 <label>subject</label>
+                  {{form.subject}}
+
+              </div>
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Save data">Save</button>
+             <button type="reset" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Clear data">Clear</button>
+          </div>
+        </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+    //Initialize Select2 Elements
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    })
+
+$(document).ready(function(){
+    $("#id_mod_name").keyup(function(){
+        var mod_name = $(this).val().trim(); // Remove leading/trailing whitespaces
+
+        if(mod_name.length >= 6){ // Set a minimum character length
+            $.ajax({
+                url: '{% url 'check_modulename_exist' %}',
+                type: 'POST',
+                data: {mod_name: mod_name}
+            })
+            .done(function(response){
+                console.log(response);
+                if(response.exists){ // Check if a similar module name exists
+                    // Confirm if user wants to save the similar module name
+                    var confirmSave = confirm("A similar module name already exists. Do you want to save it anyway?");
+                    if(confirmSave) {
+                        // Proceed with saving
+                        $("form").submit(); // Submit the form
+                    } else {
+                        // Cancel saving
+                        $("#id_mod_name").val(''); // Clear the input field
+                        alert("Save cancelled. Please choose a different module name.");
+                    }
+                }
+                else{
+                    // Module name is available
+                    $(".mod_name_error").remove();
+                    $("<span class='mod_name_error' style='padding: 5px;color: green;font-weight: bold;'>Module Name is available</span>").insertAfter("#id_mod_name");
+                }
+            })
+            .fail(function(){
+                $(".mod_name_error").remove();
+                $("<span class='mod_name_error' style='padding: 5px;color: red;font-weight: bold;'>An error occurred while checking module name existence. Please try again later.</span>").insertAfter("#id_mod_name");
+            })
+        }
+        else{
+            $(".mod_name_error").remove();
+        }
+    });
+});
+</script>
+
+<script>
+function incrementValue(id) {
+    var value = parseInt(document.getElementById(id).value, 10);
+    document.getElementById(id).value = isNaN(value) ? 0 : value + 1;
+}
+
+function decrementValue(id) {
+    var value = parseInt(document.getElementById(id).value, 10);
+    document.getElementById(id).value = isNaN(value) ? 0 : Math.max(0, value - 1);
+}
+
+</script>
+
+<script>
+    // Function to fetch subjects based on the selected course
+    function fetchSubjects(courseId) {
+        var subjectsDropdown = $('#id_subject');  // Make sure the ID matches the subject field ID
+        $.ajax({
+            url: '{% url "get_sub" %}',
+            data: {'c_id': courseId},
+            dataType: 'json',
+            success: function (data) {
+                subjectsDropdown.empty();
+                $.each(data.subjects, function (index, subject) {
+                    subjectsDropdown.append('<option value="' + subject.sub_id + '">' + subject.sub_name + '</option>');
+                });
+                subjectsDropdown.trigger('change');
+            }
+        });
+    }
+</script>
+
+{% endblock custom_js %}

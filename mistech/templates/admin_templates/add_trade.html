@@ -1,0 +1,118 @@
+
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Add Trade</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-6">
+            <!-- general form elements -->
+       <div class="card card-green">
+        <div class="card-header">
+          <h3 class="card-title">Add Trade Information</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+        <form role="form" action="{% url 'add_trade_save' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="form-group col-md-12">
+                 <label>Trade Name</label>
+                  {{form.tr_name }}
+              </div>
+
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Save data">Save</button>
+             <button type="reset" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Clear data">Clear</button>
+          </div>
+        </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock main_content %}
+
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+$(document).ready(function(){
+    $("#id_tr_name").keyup(function(){
+        var tr_name = $(this).val().trim(); // Remove leading/trailing whitespaces
+
+        if(tr_name.length >= 6){ // Set a minimum character length
+            $.ajax({
+                url: '{% url 'check_tradename_exist' %}',
+                type: 'POST',
+                data: {tr_name: tr_name}
+            })
+            .done(function(response){
+                console.log(response);
+                if(response.exists){ // Check if a similar trade name exists
+                    // Confirm if user wants to save the similar trade name
+                    var confirmSave = confirm("A similar trade name already exists. Do you want to save it anyway?");
+                    if(confirmSave) {
+                        // Proceed with saving
+                        $("form").submit(); // Submit the form
+                    } else {
+                        // Cancel saving
+                        $("#id_tr_name").val(''); // Clear the input field
+                        alert("Save cancelled. Please choose a different trade name.");
+                    }
+                }
+                else{
+                    // Trade name is available
+                    $(".tr_name_error").remove();
+                    $("<span class='tr_name_error' style='padding: 5px;color: green;font-weight: bold;'>Trade Name is available</span>").insertAfter("#id_tr_name");
+                }
+            })
+            .fail(function(){
+                $(".tr_name_error").remove();
+                $("<span class='tr_name_error' style='padding: 5px;color: red;font-weight: bold;'>An error occurred while checking trade name existence. Please try again later.</span>").insertAfter("#id_tr_name");
+            })
+        }
+        else{
+            $(".tr_name_error").remove();
+        }
+    });
+});
+
+
+</script>
+{% endblock custom_js %}

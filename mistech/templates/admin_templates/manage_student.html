@@ -1,0 +1,128 @@
+{% extends 'admin_templates/base_template.html' %}
+
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Manage Student</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+
+
+           <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Student Details</h3>
+
+                <div class="card-tools">
+                  <div class="input-group input-group-sm" style="width: 150px;">
+                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+
+                    <div class="input-group-append">
+                      <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Profile Image</th>
+                      <th>User Name</th>
+                      <th> First Name</th>
+                      <th>Middle Name</th>
+                      <th>Last Name</th>
+                      <th>Email</th>
+                      <th>Date of Birth</th>
+                      <th>NIC</th>
+                      <th>Student ID No</th>
+                      <th>Address</th>
+                      <th>Gender</th>
+                      <th>Mobile No</th>
+                      <th>Resident No</th>
+                      <th>Civil Status</th>
+                      <th>Nationality</th>
+                      <th>Educational Qualifications</th>
+                      <th>Professional Qualifications</th>
+                      <th>Other Qualifications</th>
+                      <th>Guardian Name</th>
+                      <th>Guardian Contact No</th>
+                      <th>Session</th>
+                      <th>Batch</th>
+                      <th>Course</th>
+                      <th>Trade</th>
+                      <th>Last Login</th>
+                      <th>Date Joined</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for student in student %}
+                    <tr>
+                      <td>{{ student.admin.id }}</td>
+                      {% if student.admin.profile_img %}
+                      <td><img src="{{ student.admin.profile_img.url }}" class="rounded-circle" style="width:100px"></td>
+                      {% else %}
+                      <td>No Image</td>
+                      {% endif %}
+
+                      <td>{{ student.admin.username }}</td>
+                      <td>{{ student.admin.first_name}}</td>
+                      <td>{{ student.middle_name }}</td>
+                      <td>{{ student.admin.last_name }}</td>
+                      <td>{{ student.admin.email }}</td>
+                      <td>{{ student.dob }}</td>
+                      <td>{{ student.nic }}</td>
+                      <td>{{ student.st_idNo }}</td>
+                      <td>{{ student.adrz }}</td>
+                      <td>{{ student.gender }}</td>
+                      <td>{{ student.mobileNo }}</td>
+                      <td>{{ student.resiNo }}</td>
+                      <td>{{ student.civil_status }}</td>
+                      <td>{{ student.nationality }}</td>
+                      <td>{{ student.edu_qualification }}</td>
+                      <td>{{ student.prof_qualification }}</td>
+                      <td>{{ student.other_qualification }}</td>
+                      <td>{{ student.guardian_name }}</td>
+                      <td>{{ student.guardian_contNo }}</td>
+                      <td>{{ student.yr_id.session_start }} To {{ student.yr_id.session_end }}</td>
+                      <td>{{ student.b_id.b_code }}</td>
+                      <td>{{ student.c_id.c_name }}</td>
+                      <td>{{ student.tr_id.tr_name }}</td>
+                      <td>{{ student.admin.last_login }}</td>
+                      <td>{{ student.admin.date_joined }}</td>
+
+                      <td><a href="{% url 'edit_student' st_id=student.st_id %}" class="btn btn-success">Edit</a></td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.card-body -->
+              <div class="card-footer clearfix">
+                <ul class="pagination pagination-sm m-0 float-right">
+                  <li class="page-item"><a class="page-link" href="#">&laquo;</a></li>
+                  <li class="page-item"><a class="page-link" href="#">1</a></li>
+                  <li class="page-item"><a class="page-link" href="#">2</a></li>
+                  <li class="page-item"><a class="page-link" href="#">3</a></li>
+                  <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
+                </ul>
+              </div>
+            </div>
+            <!-- /.card -->
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- /.content -->
+{% endblock main_content %}
+

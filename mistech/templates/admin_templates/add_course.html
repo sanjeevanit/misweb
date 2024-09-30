@@ -1,0 +1,159 @@
+
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Add Course</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-12">
+            <!-- general form elements -->
+       <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">Add Course Information</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+        <form role="form" action="{% url 'add_course_save' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="form-group col-md-4">
+                 <label>Course Name</label>
+                  {{form.c_name }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Course Code</label>
+                  {{form.c_code }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Course Type</label>
+                  {{form.c_type }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Course Duration</label>
+                  {{form.c_duration }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Qualification</label>
+                  {{form.c_qualification }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Trade</label>
+                  {{form.trade }}
+              </div>
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Save data">Save</button>
+             <button type="reset" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Clear data">Clear</button>
+          </div>
+        </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+    //Initialize Select2 Elements
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    })
+
+        $(document).ready(function(){
+        $("#id_c_name").keyup(function(){
+            var c_name=$(this).val();
+
+            if(c_name!=""){
+                $.ajax({
+                    url:'{% url 'check_coursename_exist' %}',
+                    type:'POST',
+                    data:{c_name:c_name}
+                })
+                .done(function(response){
+                    console.log(response);
+                    if(response=="True"){
+                        $(".c_name_error").remove();
+                        $("<span class='c_name_error' style='padding: 5px;color: red;font-weight: bold;'>Course Name is already existed </span>").insertAfter("#id_c_name");
+                    }
+                    else{
+                        $(".c_name_error").remove();
+                        $("<span class='c_name_error' style='padding: 5px;color: green;font-weight: bold;'>Course Name is available</span>").insertAfter("#id_c_name");
+                    }
+                })
+                .fail(function(){
+                    console.log("failed");
+                })
+            }
+            else{
+                $(".c_name_error").remove();
+            }
+
+        });
+
+    });
+
+    $(document).ready(function() {
+        // Function to fetch trade names using AJAX
+        function fetchTradeNames() {
+            $.ajax({
+                url: "{% url 'get_trade_names' %}",
+                type: "GET",
+                dataType: "json",
+                success: function(response) {
+                    var tradeNames = response.trade_names;
+                    var options = '';
+                    for (var i = 0; i < tradeNames.length; i++) {
+                        options += '<option value="' + tradeNames[i][0] + '">' + tradeNames[i][1] + '</option>';
+                    }
+                    // Update the trade name dropdown
+                    $('#id_trade').html(options);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to fetch trade names:", error);
+                }
+            });
+        }
+
+        // Call the fetchTradeNames function when the page loads
+        fetchTradeNames();
+
+       
+    });
+</script>
+{% endblock custom_js %}

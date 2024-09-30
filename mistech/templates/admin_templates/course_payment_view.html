@@ -1,0 +1,182 @@
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Course Payment</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+
+
+{% block main_content %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <form id="search-form" role="form" method="get" enctype="multipart/form-data">
+                    <div class="card card-purple">
+                        <div class="card-header">
+                            <h3 class="card-title">Course Payment</h3>
+                            <div class="card-tools">
+                              <div class="d-flex">
+                                <div class="input-group input-group-sm" style="width: 200px;">
+                                    <input type="text" id="search-input" name="search" style="height: 38px;" value="{{ search_query }}" class="form-control float-right" placeholder="Search">
+
+                                    <div class="input-group-append"style="height: 38px;">
+                                        <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- CSV Button for Searched Data -->
+                                <div class="ml-2">
+                                    <a href="{% if search_query %}{% url 'coz_pay_csv_with_query' search_query=search_query|urlencode %}{% else %}{% url 'coz_pay_csv' %}{% endif %}" class="btn btn-primary" title="Export to CSV">
+                                        <i class="fas fa-file-csv"></i> Export to CSV
+                                    </a>
+                                </div>
+                                <div class="ml-2">
+                                    <a href="{% if search_query %}{% url 'coz_pay_pdf_with_query' search_query=search_query|urlencode %}{% else %}{% url 'coz_pay_pdf' %}{% endif %}" id="exportPDFButton" class="btn btn-primary" title="Export to PDF">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                        <!-- /.card-header -->
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAllColumns"></th>
+                                        <th>ID</th>
+                                        <th>Student ID</th>
+                                        <th>Course</th>
+                                        <th>Batch</th>
+                                        <th>Price</th>
+                                        <th>Payment Date</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for payment in payments %}
+                                <tr>
+                                    <td><input type="checkbox" class="columnCheckbox" value="{{ payment.pay_id }}"></td>
+                                    <td>{{ payment.pay_id }}</td>
+                                    <td>{{ payment.st_id.st_idNo }}</td>
+                                    <td>{{ payment.c_id.c_name }}</td>
+                                    <td>{{ payment.b_id.b_code }}</td>
+                                    <td>{{ payment.price }}</td>
+                                    <td>{{ payment.payment_date }}</td>
+
+                                </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+
+                    <!-- /.card -->
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+<div class="pagination-container">
+    <div class="pagination">
+        <div class="col-md-6 text-left">
+            <span class="current-page">
+                Page {{ payments.number }} of {{ payments.paginator.num_pages }}
+            </span>
+        </div>
+
+        <div class="col-md-6 text-right">
+            <span class="step-links">
+                {% if payments.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ payments.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-numbers">
+                    {% for i in payments.paginator.page_range %}
+                        {% if payments.number == i %}
+                            <span class="page-current">{{ i }}</span>
+                        {% else %}
+                            <a href="?page={{ i }}">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                {% if payments.has_next %}
+                    <a href="?page={{ payments.next_page_number }}">next</a>
+                    <a href="?page={{ payments.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+$(document).ready(function () {
+    // Handle individual column checkbox change
+    $('.columnCheckbox').on('change', function () {
+        if (!$(this).prop('checked')) {
+            $('#selectAllColumns').prop('checked', false);
+        }
+    });
+
+    // Handle Select All checkbox change
+    $('#selectAllColumns').on('change', function () {
+        $('.columnCheckbox').prop('checked', $(this).prop('checked'));
+    });
+
+    var typingTimer;
+    var doneTypingInterval = 500;  // 500 milliseconds delay before making a request
+
+    $('#search-input').on('input', function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(performSearch, doneTypingInterval);
+    });
+
+    function performSearch() {
+        $('#search-form').submit();
+    }
+
+    // Submit the form when Export to CSV button is clicked
+    $('#exportCSVButton').on('click', function () {
+        $('#search-form').append('<input type="hidden" name="export_csv" value="true">');
+        $('#search-form').submit();
+    });
+
+    // JavaScript code to handle the export to PDF button
+    $('#exportPDFButton').on('click', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        var selectedIds = [];
+        $('.columnCheckbox:checked').each(function () {
+            selectedIds.push($(this).val()); // Assuming the checkbox value is the Payment ID
+        });
+
+        var url;
+        if (selectedIds.length > 0) {
+            url = "{% url 'coz_pay_pdf' %}?selected_ids=" + selectedIds.join(',');
+        } else {
+            url = "{% url 'coz_pay_pdf' %}";
+        }
+
+        // Open the PDF in a new window or tab
+        window.open(url, '_blank');
+
+    });
+});
+</script>
+{% endblock custom_js %}

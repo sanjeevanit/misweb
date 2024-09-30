@@ -1,0 +1,86 @@
+
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Add Session Year</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-6">
+            <!-- general form elements -->
+       <div class="card card-green">
+        <div class="card-header">
+          <h3 class="card-title">Add Session Year</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+        <form role="form" action="{% url 'add_session_save' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="form-group col-md-12">
+                 <label>Session Start Year </label>
+                    <input type="date" class="form-control" name="session_start" placeholder="Enter Session Start Year">
+              </div>
+              <div class="form-group col-md-12">
+                 <label>Session End Year </label>
+                    <input type="date" class="form-control" name="session_end" placeholder="Enter Session End Year">
+              </div>
+
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Save data">Save</button>
+             <button type="reset" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Clear data">Clear</button>
+          </div>
+        </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock main_content %}
+
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+    //Initialize Select2 Elements
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    })
+
+
+</script>
+{% endblock custom_js %}

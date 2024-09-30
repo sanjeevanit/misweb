@@ -1,0 +1,178 @@
+{% extends 'admin_templates/base_template.html' %}
+
+{% block page_title %}
+    <h6>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+                <li class="breadcrumb-item active">Add Subjects</li>
+            </ol>
+        </nav>
+    </h6>
+{% endblock page_title %}
+
+{% block main_content %}
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <!-- general form elements -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Add Subject Information</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <form role="form" action="{% url 'add_subject_save' %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    {% for field in form %}
+                                    <div class="form-group col-md-4">
+                                        {{ field.errors }}
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {% if field.name == 'sf_id' %}
+                                        <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="select2 form-control" multiple>
+                                            {% for id, idNo in field.field.choices %}
+                                            <option value="{{ id }}">{{ idNo }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% else %}
+                                        {{ field }}
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                    <div class="form-group col-md-6">
+                                        {% if messages %}
+                                        {% for message in messages %}
+                                        {% if message.tags == 'error' %}
+                                        <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                                        {% endif %}
+                                        {% if message.tags == 'success' %}
+                                        <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!-- /.card-body -->
+                            <div class="card-footer text-center">
+                                <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Save data">Save</button>
+                                <button type="reset" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Clear data">Clear</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+    //Initialize Select2 Elements
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    })
+
+    $(document).ready(function(){
+        $("#id_sub_name").keyup(function(){
+            var sub_name=$(this).val();
+
+            if(sub_name!=""){
+                $.ajax({
+                    url:'{% url 'check_subjectname_exist' %}',
+                    type:'POST',
+                    data:{sub_name:sub_name}
+                })
+                .done(function(response){
+                    console.log(response);
+                    if(response=="True"){
+                        $(".sub_name_error").remove();
+                        $("<span class='sub_name_error' style='padding: 5px;color: red;font-weight: bold;'>Subject Name is already existed </span>").insertAfter("#id_sub_name");
+                    }
+                    else{
+                        $(".sub_name_error").remove();
+                        $("<span class='sub_name_error' style='padding: 5px;color: green;font-weight: bold;'>Subject Name is available</span>").insertAfter("#id_sub_name");
+                    }
+                })
+                .fail(function(){
+                    console.log("failed");
+                })
+            }
+            else{
+                $(".sub_name_error").remove();
+            }
+
+        });
+
+    });
+
+    $(document).ready(function() {
+        // Function to fetch course names using AJAX
+        function fetchCourseNames() {
+            $.ajax({
+                url: "{% url 'get_course_names' %}",
+                type: "GET",
+                dataType: "json",
+                success: function(response) {
+                    var courseNames = response.course_names;
+                    var options = '';
+                    for (var i = 0; i < courseNames.length; i++) {
+                        options += '<option value="' + courseNames[i][0] + '">' + courseNames[i][1] + '</option>';
+                    }
+                    // Update the course name dropdown
+                    $('#id_c_id').html(options);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to fetch course names:", error);
+                }
+            });
+        }
+
+        // Call the fetchCourseNames function when the page loads
+        fetchCourseNames();
+    });
+
+    $(document).ready(function() {
+        // Function to fetch staff idNos using AJAX
+        function fetchStaffIdNo() {
+            $.ajax({
+                url: "{% url 'get_staff_idnos' %}",
+                type: "GET",
+                dataType: "json",
+                success: function(response) {
+                    var staffIds = response.staff_ids;
+                    var options = '';
+                    for (var i = 0; i < staffIds.length; i++) {
+                        options += '<option value="' + staffIds[i][0] + '">' + staffIds[i][1] + '</option>';
+                    }
+                    // Update the staff idNos dropdown
+                    $('#id_sf_id').html(options);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to fetch staff ID Nos:", error);
+                }
+            });
+        }
+
+        // Call the fetchStaffIdNo function when the page loads
+        fetchStaffIdNo();
+    });
+
+
+</script>
+{% endblock custom_js %}
+

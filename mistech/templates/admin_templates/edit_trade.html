@@ -1,0 +1,66 @@
+
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}
+<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'manage_trade' %}">Manage Trade</a></li>
+          <li class="breadcrumb-item active">Edit Trade</li>
+        </ol>
+    </nav></h6>
+      <h4>Edit Trade | ID : {{ tr_id }}</h4>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-6">
+            <!-- general form elements -->
+       <div class="card card-green">
+        <div class="card-header">
+          <h3 class="card-title">Edit Trade Form</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+        <form role="form" action="{% url 'edit_trade_save' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="form-group col-md-12">
+                 <label>Trade Name</label>
+                 {{form.tr_name }}
+              </div>
+
+
+              <div class="form-group col-md-12">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-info" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Edit data">Update</button>
+          </div>
+        </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock main_content %}
+
+

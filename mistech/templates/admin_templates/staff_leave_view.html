@@ -1,0 +1,81 @@
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Staff Leave</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+
+
+           <div class="row">
+          <div class="col-12">
+            <div class="card card-purple">
+              <div class="card-header">
+                <h3 class="card-title">Staff Leave</h3>
+
+                <div class="card-tools">
+                  <div class="input-group input-group-sm" style="width: 150px;">
+                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+
+                    <div class="input-group-append">
+                      <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                  <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Staff ID</th>
+                        <th>Student Name</th>
+                        <th>Leave Date</th>
+                        <th>Leave Message</th>
+                        <th>Apply On</th>
+                        <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for leave in leaves %}
+                    <tr>
+                        <td>{{ leave.lrs_id }}</td>
+                        <td>{{ leave.sf_id.sf_idNo }}</td>
+                        <td>{{ leave.sf_id.admin.first_name }} {{ leave.sf_id.admin.last_name }}</td>
+                        <td>{{ leave.lrs_date }}</td>
+                        <td>{{ leave.lrs_msg }}</td>
+                        <td>{{ leave.created_at }}</td>
+                        <td>
+                            {% if leave.lrs_status == 0 %}
+                            Approve
+
+                            {% elif leave.lr_status == 1  %}
+                             <button class="btn btn-warning" disabled="disabled" data-toggle="modal" data-target="#reply_modal">Approved</button>
+                            {% else %}
+                            <button class="btn btn-danger" disabled="disabled" data-toggle="modal" data-target="#reply_modal">Disapproved</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+ <!-- /.content -->
+{% endblock main_content %}
+
+

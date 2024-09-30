@@ -1,0 +1,132 @@
+{% extends 'admin_templates/base_template.html' %}
+{% block page_title %}<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin_home">Home</a></li>
+          <li class="breadcrumb-item active">Manage Trade</li>
+        </ol>
+    </nav></h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+
+
+           <div class="row">
+          <div class="col-12">
+          <form id="search-form" role="form"  method="get" enctype="multipart/form-data">
+            <div class="card card-purple">
+              <div class="card-header">
+                <h3 class="card-title">Trade Details</h3>
+
+                <div class="card-tools">
+                  <div class="input-group input-group-sm" style="width: 150px;">
+                    <input type="text" id="search-input" name="search" value="{{search_tr}}" class="form-control float-right" placeholder="Search">
+
+                    <div class="input-group-append">
+                      <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                    </div>
+                  </div>
+                                    <!-- PDF Button -->
+                <a href="{% url 'tr_pdf' search_tr='search_tr' %}" class="btn btn-success" title="Export to PDF">
+                    <i class="fas fa-file-pdf"></i> Export to PDF
+                </a>
+                <!-- CSV Button -->
+                <a href="{% url 'tr_csv' search_tr='search_tr' %}" class="btn btn-info" title="Export to CSV">
+                    <i class="fas fa-file-csv"></i> Export to CSV
+                </a>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Created At</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for trade in trade %}
+                    <tr>
+                      <td>{{ trade.tr_id }}</td>
+                      <td>{{ trade.tr_name}}</td>
+                      <td>{{ trade.created_at}}</td>
+
+                      <td><a href="{% url 'edit_trade' tr_id=trade.tr_id %}" class="btn btn-success">Edit</a></td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </form>
+
+           </div>
+
+
+        </div>
+      </div>
+    </section>
+    <!-- /.content -->
+
+<div class="pagination-container">
+
+
+<div class="pagination">
+    <div class="col-md-6 text-left">
+        <span class="current-page">
+            Page {{ trade.number }} of {{ trade.paginator.num_pages }}
+        </span>
+    </div>
+
+    <div class="col-md-6 text-right">
+        <span class="step-links">
+            {% if trade.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ trade.previous_page_number }}">previous</a>
+            {% endif %}
+            <span class="page-numbers">
+                {% for i in trade.paginator.page_range %}
+                    {% if trade.number == i %}
+                        <span class="page-current">{{ i }}</span>
+                    {% else %}
+                        <a href="?page={{ i }}">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+            </span>
+            {% if trade.has_next %}
+                <a href="?page={{ trade.next_page_number }}">next</a>
+                <a href="?page={{ trade.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+</div>
+
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+    $(document).ready(function () {
+        var typingTimer;
+        var doneTypingInterval = 500;  // 500 milliseconds delay before making a request
+
+        $('#search-input').on('input', function () {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(performSearch, doneTypingInterval);
+        });
+
+        function performSearch() {
+            $('#search-form').submit();
+        }
+    });
+</script>
+{% endblock custom_js %}
+

@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>MIS | Log in</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="icon" type="image/png" href="{% static 'dist/img/icons/favicon.ico' %}"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Ionicons -->
+<!--  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">-->
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <!--===============================================================================================-->
+<!--	<link rel="stylesheet" type="text/css" href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}">-->
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'dist/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'dist/vendor/animate/animate.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'dist/vendor/css-hamburgers/hamburgers.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'dist/vendor/select2/select2.min.css' %}">
+<!--===============================================================================================-->
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+
+  <!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'dist/css/util.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'dist/css/main.css' %}">
+<!--===============================================================================================-->
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body>
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100">
+				<div class="login100-pic js-tilt" data-tilt>
+					<img src="{% static 'dist/img/1.gif' %}" alt="IMG">
+				</div>
+
+
+  <!-- /.login-logo -->
+
+
+
+
+      <form action="/doLogin" method="post" class="login100-form validate-form">
+          {% csrf_token %}
+        <span class="login100-form-title">MIS TECH - LOGIN</span>
+        <div class="input-group mb-3">
+        <div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
+          <input class="input100" type="text" name="email" placeholder="Email">
+          <span class="focus-input100"></span>
+          <span class="symbol-input100">
+              <i class="fa fa-envelope" aria-hidden="true"></i>
+          </span>
+        </div>
+        </div>
+        <div class="input-group mb-3">
+        <div class="wrap-input100 validate-input" data-validate = "Password is required">
+          <input type="password" class="input100" placeholder="Password" name="password">
+ 					<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<i class="fa fa-lock" aria-hidden="true"></i>
+						</span>
+
+        </div>
+        </div>
+        <div class="row">
+          <!-- /.col -->
+          <div class="container-login100-form-btn">
+            <button class="login100-form-btn" type="submit" >Sign In</button>
+          </div><!-- /.col -->
+        </div>
+        <div class="container-login100-form-btn">
+          {% if messages %}
+         <div class="col-12">
+            {% for message in messages %}
+            {% if message.tags == 'error' %}
+            <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+            {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <div class="row">
+            <div class="wrap-input100 validate-input text-center">
+                <a href="{% url 'password_reset' %}">Forget Password</a>
+            </div>
+
+        </div>
+
+      </form>
+
+      <!-- /.social-auth-links -->
+
+    </div>
+    <!-- /.login-card-body -->
+
+
+            </div>
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'plugins/bootstrap/js/popper.js' %}"></script>
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'dist/vendor/select2/select2.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'dist/vendor/tilt/tilt.jquery.min.js' %}"></script>
+	<script >
+		$('.js-tilt').tilt({
+			scale: 1.1
+		})
+	</script>
+<!--===============================================================================================-->
+
+<!-- AdminLTE App -->
+<script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+
+</body>
+</html>

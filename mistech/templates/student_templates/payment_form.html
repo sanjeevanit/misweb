@@ -1,0 +1,116 @@
+{% extends 'student_templates/base_template.html' %}
+
+{% block page_title %}
+    <h6>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/student_home">Home</a></li>
+                <li class="breadcrumb-item active">Payment Form</li>
+            </ol>
+        </nav>
+    </h6>
+{% endblock page_title %}
+
+{% block main_content %}
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <!-- general form elements -->
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Payment Form</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <form role="form" id="payment-form" method="POST">
+                            {% csrf_token %}
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label>Card Details</label>
+                                        <div id="card-details" class="form-control"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="amount">Amount</label>
+                                        <input type="text" class="form-control" id="amount" name="amount" placeholder="Enter Payment Amount" required>
+                                    </div>
+                                    <!-- Hidden fields for mobile number, email, course name, and batch code -->
+                                    <input type="hidden" id="mobile_number" name="mobile_number" value="{{ mobile_number }}">
+                                    <input type="hidden" id="email" name="email" value="{{ email }}">
+                                    <input type="hidden" id="course_name" name="course_name" value="{{ course_name }}">
+                                    <input type="hidden" id="batch_code" name="batch_code" value="{{ batch_code }}">
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+                            <div class="card-footer text-center">
+                                <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Save data">
+                                    <i class="fa fa-visa"></i>
+                                    Pay Now
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+    $(document).ready(function() {
+        var stripe = Stripe('{{ stripe_publishable_key }}');
+        var elements = stripe.elements();
+
+        var card = elements.create('card');
+        card.mount('#card-details');
+
+        $('#payment-form').submit(function(event) {
+            event.preventDefault();
+
+            stripe.createToken(card).then(function(result) {
+                if (result.error) {
+                    console.error(result.error.message);
+                    // Show error message in red color
+                    alert(result.error.message);
+                } else {
+                    var token = result.token.id;
+                    $('#payment-form').append('<input type="hidden" name="stripeToken" value="' + token + '">');
+
+                    // Submit the form
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "make_payment" %}',
+                        data: $('#payment-form').serialize(),
+                        success: function(response) {
+                            // Check if payment was successful
+                            if (response.success) {
+                                // Show success message in popup alert
+                                alert('Payment successful!');
+                                // Refresh the payment form
+                                window.location.reload();
+                            } else {
+                                // Show error message in popup alert
+                                alert(response.error);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(xhr.responseText);
+                            // Show error message in popup alert
+                            alert(xhr.responseJSON.error);
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock custom_js %}
+
+

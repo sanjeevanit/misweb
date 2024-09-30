@@ -1,0 +1,175 @@
+{% extends 'student_templates/base_template.html' %}
+{% block page_title %}
+<h6>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/student_home">Home</a></li>
+            <li class="breadcrumb-item active">View Attendance</li>
+        </ol>
+    </nav>
+</h6>
+{% endblock page_title %}
+
+{% block main_content %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <form id="search-form" role="form" method="get" enctype="multipart/form-data">
+                    <div class="card card-purple">
+                        <div class="card-header">
+                            <h3 class="card-title">View Attendance</h3>
+                            <div class="card-tools">
+                              <div class="d-flex">
+                                <div class="input-group input-group-sm" style="width: 200px;">
+                                    <input type="text" id="search-input" name="search" style="height: 38px;" value="{{ search_query }}" class="form-control float-right" placeholder="Search">
+
+                                    <div class="input-group-append"style="height: 38px;">
+                                        <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- CSV Button for Searched Data -->
+                                <div class="ml-2">
+                                    <a href="{% if search_query %}{% url 'st_at_csv_with_query' search_query=search_query|urlencode %}{% else %}{% url 'st_at_csv' %}{% endif %}" class="btn btn-primary" title="Export to CSV">
+                                        <i class="fas fa-file-csv"></i> Export to CSV
+                                    </a>
+                                </div>
+                                <div class="ml-2">
+                                    <a href="{% if search_query %}{% url 'st_at_pdf_with_query' search_query=search_query|urlencode %}{% else %}{% url 'st_at_pdf' %}{% endif %}" id="exportPDFButton" class="btn btn-primary" title="Export to PDF">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                        <!-- /.card-header -->
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAllColumns"></th>
+                                        <th>ID</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for attendance in attendances %}
+                                <tr>
+                                    <td><input type="checkbox" class="columnCheckbox" value="{{ attendance.at_id }}"></td>
+                                    <td>{{ attendance.at_id }}</td>
+                                    <td>{{ attendance.at_date }}</td>
+                                    <td class="{% if attendance.status == 'Present' %}text-success font-weight-bold{% elif attendance.status == 'Absent' %}text-danger font-weight-bold{% endif %}">{{ attendance.status }}</td>
+
+                                </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+
+                    <!-- /.card -->
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+<div class="pagination-container">
+    <div class="pagination">
+        <div class="col-md-6 text-left">
+            <span class="current-page">
+                Page {{ attendances.number }} of {{ attendances.paginator.num_pages }}
+            </span>
+        </div>
+
+        <div class="col-md-6 text-right">
+            <span class="step-links">
+                {% if attendances.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ attendances.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-numbers">
+                    {% for i in attendances.paginator.page_range %}
+                        {% if attendances.number == i %}
+                            <span class="page-current">{{ i }}</span>
+                        {% else %}
+                            <a href="?page={{ i }}">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                {% if attendances.has_next %}
+                    <a href="?page={{ attendances.next_page_number }}">next</a>
+                    <a href="?page={{ attendances.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+{% endblock main_content %}
+{% block custom_js %}
+<script>
+$(document).ready(function () {
+    // Handle individual column checkbox change
+    $('.columnCheckbox').on('change', function () {
+        if (!$(this).prop('checked')) {
+            $('#selectAllColumns').prop('checked', false);
+        }
+    });
+
+    // Handle Select All checkbox change
+    $('#selectAllColumns').on('change', function () {
+        $('.columnCheckbox').prop('checked', $(this).prop('checked'));
+    });
+
+    var typingTimer;
+    var doneTypingInterval = 500;  // 500 milliseconds delay before making a request
+
+    $('#search-input').on('input', function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(performSearch, doneTypingInterval);
+    });
+
+    function performSearch() {
+        $('#search-form').submit();
+    }
+
+    // Submit the form when Export to CSV button is clicked
+    $('#exportCSVButton').on('click', function () {
+        $('#search-form').append('<input type="hidden" name="export_csv" value="true">');
+        $('#search-form').submit();
+    });
+
+    // JavaScript code to handle the export to PDF button
+    $('#exportPDFButton').on('click', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        var selectedIds = [];
+        $('.columnCheckbox:checked').each(function () {
+            selectedIds.push($(this).val()); // Assuming the checkbox value is the attendance ID
+        });
+
+        var url;
+        if (selectedIds.length > 0) {
+            url = "{% url 'st_at_pdf' %}?selected_ids=" + selectedIds.join(',');
+        } else {
+            url = "{% url 'st_at_pdf' %}";
+        }
+
+        // Open the PDF in a new window or tab
+        window.open(url, '_blank');
+
+    });
+});
+</script>
+{% endblock custom_js %}

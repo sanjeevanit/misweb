@@ -1,0 +1,84 @@
+{% load static %}
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="" class="brand-link">
+      <img src="{% static 'dist/img/mis_logo.png' %}" alt="Tech Logo" style="opacity: .8">
+      <span class="brand-text font-weight-light">MIS Tech</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="{{ user.profile_img.url }}" class="img-circle elevation-2" alt="User Image" width="1px" height="1px">
+        </div>
+        <div class="info">
+          <a href="{% url 'student_profile'%}" class="d-block">{{ user.username }}</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <!-- Add icons to the links using the .nav-icon class
+               with font-awesome or any other icon font library -->
+          <li class="nav-item">
+            {% url 'student_home' as student_home %}
+            <a href="{{ student_home }}" class="nav-link {% if request.path == student_home %} active {% endif %}">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <p>
+                Home
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
+             {% url 'st_view_attendance' as st_view_attendance %}
+             <a href="{{st_view_attendance}}" class="nav-link {% if request.path == st_view_attendance %} active {% endif %}">
+              <i class="nav-icon fas fa-list"></i>
+              <p>
+                View Attendance
+              </p>
+            </a>
+          </li>
+
+
+           <li class="nav-item">
+             {% url 'student_apply_leave' as student_apply_leave %}
+             <a href="{{student_apply_leave}}" class="nav-link {% if request.path == student_apply_leave %} active {% endif %}">
+              <i class="nav-icon fas fa-user-minus"></i>
+              <p>
+                Apply Leave
+              </p>
+            </a>
+          </li>
+
+           <li class="nav-item">
+             {% url 'student_feedback' as student_feedback %}
+             <a href="{{student_feedback}}" class="nav-link {% if request.path == student_feedback %} active {% endif %}">
+              <i class="nav-icon fas fa-envelope"></i>
+              <p>
+                Feedback
+              </p>
+            </a>
+          </li>
+
+
+
+
+          <li class="nav-item">
+             {% url 'make_payment' as make_payment %}
+             <a href="{{make_payment}}" class="nav-link {% if request.path == make_payment %} active {% endif %}">
+              <i class="nav-icon fa fa-cc-stripe"></i>
+              <p>
+                Course Payment
+              </p>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>

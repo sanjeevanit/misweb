@@ -1,0 +1,121 @@
+{% extends 'p_templates/base_template.html' %}
+{% block page_title %}
+<h6>
+    <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/p_home">Home</a></li>
+          <li class="breadcrumb-item active">Apply for Leave</li>
+        </ol>
+    </nav>
+</h6>
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card card-purple">
+                        <div class="card-header">
+                            <h3 class="card-title">Staff Leave</h3>
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm" style="width: 150px;">
+                                    <input type="text" name="table_search" class="form-control float-right"
+                                           placeholder="Search">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-default"><i
+                                                class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Staff ID</th>
+                                    <th>Staff Name</th>
+                                    <th>Leave Date</th>
+                                    <th>Leave Message</th>
+                                    <th>Medical Report</th>
+                                    <th>Apply On</th>
+                                    <th>Rejection reason</th>
+                                    <th>Action</th>
+
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for leave in leaves %}
+                                <tr>
+                                    <td>{{ leave.lrs_id }}</td>
+                                    <td>{{ leave.sf_id.sf_idNo }}</td>
+                                    <td>{{ leave.sf_id.admin.first_name }} {{ leave.sf_id.admin.last_name }}</td>
+                                    <td>{{ leave.lrs_date }}</td>
+                                    <td>{{ leave.lrs_msg }}</td>
+                                    <td>
+                                        {% if leave.medical_pdf %}
+                                            <a href="{{ leave.medical_pdf.url }}" target="_blank">View Medical Report PDF</a>
+                                        {% elif leave.medical_img %}
+                                            <a href="{{ leave.medical_img.url }}" alt="Medical Report Image" style="max-width: 100%;">View Medical Report</a>
+                                        {% else %}
+                                            No medical report uploaded
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ leave.created_at|date:"Y-m-d" }}</td>
+                                    <td>
+                                               <input type="text" name="reason_lv" class="form-control"  style="height: 38px;"  placeholder="Reason of the rejection">
+
+                                    </td>
+                                    <td>
+                                        {% if leave.lrs_status == 0 %}
+                                            <button class="btn btn-success" onclick="confirmApproval('{{ leave.lrs_id }}', '{{ leave.created_at|date:"Y-m-d" }}')">Approve</button>
+                                            <a class="btn btn-danger" href="{% url 'staff_disapprove' lrs_id=leave.lrs_id %}">Disapprove</a>
+                                        {% elif leave.lrs_status == 1 %}
+                                            <button class="btn btn-warning" disabled="disabled">Approved</button>
+                                        {% else %}
+                                            <button class="btn btn-danger" disabled="disabled">Disapproved</button>
+                                        {% endif %}
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- /.content -->
+{% endblock main_content %}
+{% block custom_js %}
+    <script>
+        function confirmApproval(lrsId, applyOnDate) {
+            // Ensure the date string is in a format that can be parsed by Date constructor
+            var currentDate = new Date();
+            var applyDate = new Date(applyOnDate);
+
+            // Set times to 00:00:00 for both dates for accurate comparison
+            currentDate.setHours(0, 0, 0, 0);
+            applyDate.setHours(0, 0, 0, 0);
+
+            // Debugging logs
+            console.log("Current Date:", currentDate);
+            console.log("Apply On Date:", applyDate);
+
+            if (applyDate < currentDate) {
+                var approve = confirm("The 'Apply On' date is older than the current date. Do you want to approve the leave?");
+                if (approve) {
+                    window.location.href = "{% url 'staff_approve' 'lrs_id_placeholder' %}".replace('lrs_id_placeholder', lrsId);
+                }
+            } else {
+                window.location.href = "{% url 'staff_approve' 'lrs_id_placeholder' %}".replace('lrs_id_placeholder', lrsId);
+            }
+        }
+    </script>
+{% endblock custom_js %}

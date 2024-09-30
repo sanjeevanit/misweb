@@ -1,0 +1,193 @@
+{% extends 'instructor_templates/base_template.html' %}
+{% block page_title %}
+Take Attendance
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-12">
+            <!-- general form elements -->
+       <div class="card card-indigo">
+        <div class="card-header">
+          <h3 class="card-title">Take Attendance</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+       <form id="attendanceForm" method="post" enctype="multipart/form-data">
+
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+<!--            <div class="form-group col-md-4">-->
+<!--                <label>Course</label>-->
+<!--                <select class="form-control select2 select2-purple" name="c_name" id="c_name">-->
+<!--                    {% for course in course %}-->
+<!--                        <option value="{{ course.c_name }}">{{ course.c_name }}</option>-->
+<!--                    {% endfor %}-->
+<!--                </select>-->
+<!--            </div>-->
+            <div class="form-group col-md-4">
+                <label>Subject</label>
+                <select class="form-control select2 select2-purple" name="sub_name" id="sub_name">
+                    {% for subject in subject %}
+                        <option value="{{ subject.sub_name }}">{{ subject.sub_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+             <div class="form-group col-md-4">
+                <label>Session Year </label>
+                <select class="form-control  select2 select2-purple" name="yr_id" id="yr_id">
+                    {% for session_yr in session_yr %}
+                      <option value="{{ session_yr.yr_id }}">{{ session_yr.session_start }} To {{ session_yr.session_end }}</option>
+                    {% endfor %}
+                </select>
+             </div>
+
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="button" class="btn btn-primary btn-block" id="fetch_student">Fetch Student</button>
+              <br>
+             <p id="attendanceResult"></p>
+
+          </div>
+          <div id="student_data" class="card-footer">
+          </div>
+
+       </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+    <!-- /.content -->
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+    //Initialize Select2 Elements
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    })
+
+</script>
+
+
+<script>
+    $(document).ready(function(){
+        $("#fetch_student").click(function(){
+            // Get the CSRF token from the cookie
+            const csrfToken = getCookie('csrftoken');
+
+
+            $.ajax({
+
+                url: '{% url 'get_students' %}',
+                type: 'POST',
+                data: {'csrfmiddlewaretoken': csrfToken, 'sub_name': $('#sub_name').val(),'yr_id': $('#yr_id').val(),},
+            })
+            .done(function(response){
+                var json_data=JSON.parse(response);
+                console.log(json_data)
+                var div_data="<div class='form-group col-md-4'><label>Attendance Date : </label><input type='date' name='a_date' id='a_date' class='form-control'></div><div class='form-group'><div class='row'>";
+                for(key in json_data)
+                {
+                    div_data+="<div class='col-lg-4'><div class='form-check'><input type='checkbox' checked='checked' name='student_data[]' value='"+json_data[key]['id']+"'><label class='form-check-label'>"+json_data[key]['name']+"</label></div></div>";
+                }
+                div_data+="</div></div>";
+                div_data+="<div class='form-group'>";
+                div_data+="<button id='save_attendance' class='btn btn-success btn-block' type='button'>Save Attendance Data</button>";
+                div_data+="</div>";
+
+                $("#student_data").html(div_data);
+
+            })
+            .fail(function(){
+                alert("Error in Fetching Student")
+            });
+
+            $(document).on("click","#save_attendance",function(){
+
+                $(this).attr("disabled","disabled")
+<!--                $(this).text("Saving Attendance Data...")-->
+                var student_data=$("input[name='student_data[]']").map(function(){
+                        if($(this).is(":checked")){
+                            return {"id":$(this).val(),"status":1};
+                        }
+                        else{
+                            return {"id":$(this).val(),"status":0};
+                        }
+                 }).get()
+                var attendance_date=$("#a_date").val();
+                var subject_id=$("#sub_name").val();
+                var session_year_id=$("#yr_id").val();
+                console.log(student_data)
+                student_data=JSON.stringify(student_data)
+
+                $.ajax({
+                        url:'{% url 'save_attendance_data' %}',
+                        type:'POST',
+                        data:{st_id:student_data,a_date:a_date,subject_id:sub_name,session_year_id:yr_id},
+                    })
+                    .done(function(response){
+
+                        if(response=="OK"){
+                            alert("Attendance Save")
+                        }
+                        else{
+                            alert("Error in Saving Data")
+                        }
+                        location.reload()
+                    })
+                    .fail(function(){
+                        alert("Error in Saving Student")
+                    })
+            });
+        });
+    });
+    // Function to get the CSRF token from the cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Check if the cookie name matches the CSRF token name
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
+{% endblock custom_js %}

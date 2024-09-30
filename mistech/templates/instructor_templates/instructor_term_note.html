@@ -1,0 +1,170 @@
+{% extends 'instructor_templates/base_template.html' %}
+{% block page_title %}
+    <h6>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/instructor_home">Home</a></li>
+                <li class="breadcrumb-item active">Term Note </li>
+            </ol>
+        </nav>
+    </h6>
+{% endblock page_title %}
+ {% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-12">
+            <!-- general form elements -->
+       <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">Add Term Note </h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+        <form role="form" action="{% url 'instructor_task_save' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+              <div class="form-group col-md-4">
+                 <label>Week No</label>
+                 <div class="input-group">
+                    <input type="text" class="form-control" id="tk_wk" name="tk_wk" >
+                    <button type="button" class="btn btn-outline-secondary" onclick="incrementValue('tk_wk')">+</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="decrementValue('tk_wk')">-</button>
+                </div>
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Module</label>
+                  {{form.module }}
+              </div>
+              <div class="form-group col-md-4">
+                 <label>Task Name</label>
+                  {{form.tk_name }}
+              </div>
+
+
+              <div class="form-group col-md-4">
+                 <label>Date</label>
+                  {{form.tk_date }}
+              </div>
+
+
+<div class="form-group col-md-4">
+    <label>Status</label>
+    <div class="input-group">
+        <input type="hidden" name="status" id="status" value="not_complete">
+        <button type="button" class="btn btn-success" onclick="setStatus('complete')">Completed</button>
+        <button type="button" class="btn btn-danger" onclick="setStatus('not_complete')">Not Completed</button>
+    </div>
+</div>
+
+
+
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+                </div>
+          </div>
+                <!-- /.card-body -->
+
+          <div class="card-footer text-center">
+             <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Save data">Save</button>
+             <button type="reset" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom"title="Clear data">Clear</button>
+          </div>
+        </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+    $(function () {
+    //Initialize Select2 Elements
+    $('.select2').select2()
+
+    })
+
+    //Initialize Select2 Elements
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    })
+
+$(document).ready(function(){
+    $("#id_tk_name").keyup(function(){
+        var tk_name = $(this).val().trim(); // Remove leading/trailing whitespaces
+
+        if(tk_name.length >= 6){ // Set a minimum character length
+            $.ajax({
+                url: '{% url 'check_taskname_exist' %}',
+                type: 'POST',
+                data: {tk_name: tk_name}
+            })
+            .done(function(response){
+                console.log(response);
+                if(response.exists){ // Check if a similar task name exists
+                    // Confirm if user wants to save the similar task name
+                    var confirmSave = confirm("A similar task name already exists. Do you want to save it anyway?");
+                    if(confirmSave) {
+                        // Proceed with saving
+                        $("form").submit(); // Submit the form
+                    } else {
+                        // Cancel saving
+                        $("#id_tk_name").val(''); // Clear the input field
+                        alert("Save cancelled. Please choose a different task name.");
+                    }
+                }
+                else{
+                    // Task name is available
+                    $(".tk_name_error").remove();
+                    $("<span class='tk_name_error' style='padding: 5px;color: green;font-weight: bold;'>Task Name is available</span>").insertAfter("#id_tk_name");
+                }
+            })
+            .fail(function(){
+                $(".tk_name_error").remove();
+                $("<span class='tk_name_error' style='padding: 5px;color: red;font-weight: bold;'>An error occurred while checking task name existence. Please try again later.</span>").insertAfter("#id_tk_name");
+            })
+        }
+        else{
+            $(".tk_name_error").remove();
+        }
+    });
+});
+</script>
+
+<script>
+function incrementValue(id) {
+    var value = parseInt(document.getElementById(id).value, 10);
+    document.getElementById(id).value = isNaN(value) ? 0 : value + 1;
+}
+
+function decrementValue(id) {
+    var value = parseInt(document.getElementById(id).value, 10);
+    document.getElementById(id).value = isNaN(value) ? 0 : Math.max(0, value - 1);
+}
+
+</script>
+<script>
+    function setStatus(status) {
+        document.getElementById('status').value = status;
+    }
+</script>
+
+{% endblock custom_js %}

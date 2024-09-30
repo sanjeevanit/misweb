@@ -1,0 +1,356 @@
+{% extends 'instructor_templates/base_template.html' %}
+{% block page_title %}
+<h6>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/instructor_home">Home</a></li>
+            <li class="breadcrumb-item active">Manage Term Note</li>
+        </ol>
+    </nav>
+</h6>
+{% endblock page_title %}
+{% block main_content %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <form id="search-form" role="form" method="get" enctype="multipart/form-data">
+                    <div class="card card-purple">
+                        <div class="card-header">
+                            <h3 class="card-title">Term Note</h3>
+                            <div class="card-tools">
+                              <div class="d-flex">
+                                <div class="input-group input-group-sm" style="width: 200px;">
+                                    <input type="text" id="search-input" name="search" style="height: 38px;" value="{{ search_query }}" class="form-control float-right" placeholder="Search">
+
+                                    <div class="input-group-append"style="height: 38px;">
+                                        <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- CSV Button for Searched Data -->
+                                <div class="ml-2">
+                                    <a href="{% if search_query %}{% url 'task_csv_with_query' search_query=search_query|urlencode %}{% else %}{% url 'task_csv' %}{% endif %}" class="btn btn-primary" title="Export to CSV">
+                                        <i class="fas fa-file-csv"></i> Export to CSV
+                                    </a>
+                                </div>
+                                <div class="ml-2">
+                                    <a href="{% if search_query %}{% url 'task_pdf_with_query' search_query=search_query|urlencode %}{% else %}{% url 'task_pdf' %}{% endif %}" id="exportPDFButton" class="btn btn-primary" title="Export to PDF">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                        <!-- /.card-header -->
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAllColumns"></th>
+                                        <th>ID</th>
+                                        <th>Task Name</th>
+                                        <th>Task Date</th>
+                                        <th>Weeks</th>
+                                        <th>Status</th>
+                                        <th>Module ID</th>
+                                        <th>Created Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for task in tasks %}
+                                <tr>
+                                    <td><input type="checkbox" class="columnCheckbox" value="{{ task.tk_id }}"></td>
+                                    <td>{{ task.tk_id }}</td>
+                                    <td>{{ task.tk_name }}</td>
+                                    <td>{{ task.tk_date }}</td>
+                                    <td>{{ task.tk_wk }}</td>
+                                    <td>{{ task.status }}</td>
+                                    <td>{{ task.mod_id.mod_code }}</td>
+                                    <td>{{ task.created_at }}</td>
+                                    <td><a href="{% url 'edit_instructor_task' tk_id=task.tk_id %}" class="btn btn-success">Edit</a></td>
+
+                                </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+
+                    <!-- /.card -->
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+<div class="pagination-container">
+    <div class="pagination">
+        <div class="col-md-6 text-left">
+            <span class="current-page">
+                Page {{ task.number }} of {{ task.paginator.num_pages }}
+            </span>
+        </div>
+
+        <div class="col-md-6 text-right">
+            <span class="step-links">
+                {% if task.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ task.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-numbers">
+                    {% for i in task.paginator.page_range %}
+                        {% if task.number == i %}
+                            <span class="page-current">{{ i }}</span>
+                        {% else %}
+                            <a href="?page={{ i }}">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}task
+                </span>
+                {% if task.has_next %}
+                    <a href="?page={{ task.next_page_number }}">next</a>
+                    <a href="?page={{ task.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+$(document).ready(function () {
+    // Handle individual column checkbox change
+    $('.columnCheckbox').on('change', function () {
+        if (!$(this).prop('checked')) {
+            $('#selectAllColumns').prop('checked', false);
+        }
+    });
+
+    // Handle Select All checkbox change
+    $('#selectAllColumns').on('change', function () {
+        $('.columnCheckbox').prop('checked', $(this).prop('checked'));
+    });
+
+    var typingTimer;
+    var doneTypingInterval = 500;  // 500 milliseconds delay before making a request
+
+    $('#search-input').on('input', function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(performSearch, doneTypingInterval);
+    });
+
+    function performSearch() {
+        $('#search-form').submit();
+    }
+
+    // Submit the form when Export to CSV button is clicked
+    $('#exportCSVButton').on('click', function () {
+        $('#search-form').append('<input type="hidden" name="export_csv" value="true">');
+        $('#search-form').submit();
+    });
+
+    // JavaScript code to handle the export to PDF button
+    $('#exportPDFButton').on('click', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        var selectedIds = [];
+        $('.columnCheckbox:checked').each(function () {
+            selectedIds.push($(this).val()); // Assuming the checkbox value is the task ID
+        });
+
+        var url;
+        if (selectedIds.length > 0) {
+            url = "{% url 'task_pdf' %}?selected_ids=" + selectedIds.join(',');
+        } else {
+            url = "{% url 'task_pdf' %}";
+        }
+
+        // Open the PDF in a new window or tab
+        window.open(url, '_blank');
+
+    });
+});
+</script>
+
+
+<script>
+$('#exportPDFButton').on('click', function (event) {
+    event.preventDefault(); // Prevent default form submission
+
+    // Function to fetch selected row IDs
+    function getSelectedRowIDs() {
+        var selectedIDs = [];
+        // Iterate through each checkbox and add checked row IDs to the list
+        $('input[type="checkbox"]:checked').each(function () {
+            selectedIDs.push($(this).data('task-id'));
+        });
+        return selectedIDs;
+    }
+
+    // Function to fetch data based on search query or selected rows
+    function fetchData(selectedIDs) {
+        // Sample data
+        var data = [
+            ["ID", "Task Name", "Task Date", "Week", "Status", "Module"],
+            {% for task in tasks %}
+            ["{{ task.tk_id }}", "{{ task.tk_name }}", "{{ task.tk_date }}", "{{ task.tk_wk }}", "{{ task.status }}", "{{ task.mod_id.mod_code }}"],
+            {% endfor %}
+        ];
+
+        // If selected IDs are provided, filter data based on IDs
+        if (selectedIDs.length > 0) {
+            data = data.filter(function (row) {
+                return selectedIDs.includes(row[0]); // Assuming ID is in the first column
+            });
+        }
+
+        return data;
+    }
+
+    // Fetch selected row IDs
+    var selectedIDs = getSelectedRowIDs();
+
+    // Fetch data based on selected row IDs or search query
+    var data = fetchData(selectedIDs);
+
+    // Define column widths and adjust dynamically based on content
+    var widths = [];
+    data[0].forEach(function (col, i) {
+        var maxWidth = Math.max(col.length, ...data.slice(1).map(row => row[i].length)) * 8; // Adjust the factor as needed
+        widths.push(maxWidth);
+    });
+
+    // Define styles for the table header
+    var headerStyle = {
+        fontSize: 12,
+        bold: true
+    };
+
+    // Convert images to base64 format
+    function getImageDataURL(url, callback) {
+        var img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function () {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            canvas.width = this.width;
+            canvas.height = this.height;
+            ctx.drawImage(this, 0, 0);
+            var dataURL = canvas.toDataURL();
+            callback(dataURL);
+            canvas = null; // Optional: Free up memory
+        };
+        img.src = url;
+    }
+
+    // Usage:
+    getImageDataURL('static/dist/img/sl_gov.png', function(sl_logo_base64) {
+        getImageDataURL('static/dist/img/touch-icon.png', function(logo_base64) {
+            getImageDataURL('static/dist/img/mis.png', function(mis_logo_base64) {
+                // Get user information from the DOM
+                var userFullName = "{{ request.user.first_name }} {{ request.user.last_name }}";
+                var staffIdNo = "{{ request.user.staff.sf_idNo }}";
+
+                // Create PDF document definition with landscape orientation
+                var docDefinition = {
+                    pageOrientation: 'landscape',
+                    content: [
+                        {
+                            columns: [
+                                {
+                                    width: '*',
+                                    stack: [
+                                        { image: sl_logo_base64, width: 60 },
+                                        { image: logo_base64, width: 60 }
+                                    ],
+                                    margin: [20, 20, 0, 0]
+                                },
+                                {
+                                    width: '*',
+                                    stack: [
+                                        { text: 'Technical College', fontSize: 20, bold: true, alignment: 'center', color: 'purple', margin: [0, 10, 0, 0], fontFamily: 'Helvetica-Bold' },
+                                        { text: 'Term Note', fontSize: 16, bold: true, alignment: 'center', color: 'purple', margin: [0, 10, 0, 0] },
+                                        { text: userFullName, fontSize: 16, bold: true, alignment: 'center', color: 'purple', margin: [0, 10, 0, 0] },
+                                        { text: 'Staff ID : ' + staffIdNo , fontSize: 14, bold: true, alignment: 'center', color: 'purple', margin: [0, 10, 0, 0] }
+
+                                    ],
+                                    margin: [20, 20, 0, 0]
+                                },
+                                {
+                                    width: '*',
+                                    stack: [
+                                        { image: mis_logo_base64, alignment: 'right', width: 80 }
+                                    ],
+                                    margin: [20, 20, 0, 0]
+                                }
+                            ]
+                        },
+                        // Add space before the horizontal bar and increase its thickness
+                        { text: '', margin: [0, 20, 0, 0] },
+                        { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 750, y2: 0, lineWidth: 10, color: 'darkblue' }] },
+                        // Add space after the horizontal bar and before the data table
+                        { text: '', margin: [0, 20, 0, 0] },
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: widths,
+                                body: data
+                            },
+                            // Apply header style to the table
+                            layout: {
+                                hLineWidth: function (i, node) {
+                                    return (i === 0 || i === node.table.body.length) ? 2 : 1;
+                                },
+                                vLineWidth: function (i, node) {
+                                    return (i === 0 || i === node.table.widths.length) ? 2 : 1;
+                                },
+                                hLineColor: function (i, node) {
+                                    return 'black';
+                                },
+                                vLineColor: function (i, node) {
+                                    return 'black';
+                                },
+                                fillColor: function (i, node) {
+                                    return (i === 0) ? '#CCCCCC' : null;
+                                },
+                                paddingTop: function (i, node) {
+                                    return 5;
+                                },
+                                paddingBottom: function (i, node) {
+                                    return 5;
+                                },
+                                paddingLeft: function (i, node) {
+                                    return 5;
+                                },
+                                paddingRight: function (i, node) {
+                                    return 5;
+                                },
+                                // Apply the header style
+                                headerStyles: headerStyle
+                            }
+                        }
+                    ]
+                };
+
+                // Generate PDF and prompt user to download
+                pdfMake.createPdf(docDefinition).download('term_note_data.pdf');
+            });
+        });
+    });
+});
+</script>
+
+
+
+{% endblock custom_js %}
+

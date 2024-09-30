@@ -1,0 +1,115 @@
+{% extends 'instructor_templates/base_template.html' %}
+{% block page_title %}
+Leave Report and Apply for Leave
+{% endblock page_title %}
+{% block main_content %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-12">
+            <!-- general form elements -->
+       <div class="card card-indigo">
+        <div class="card-header">
+          <h3 class="card-title">Apply for Leave</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+<form action="{% url 'instructor_apply_leave_save' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="form-group col-md-12">
+                <label>Leave date</label>
+                <input type="date" name="lrs_date" class="form-control" placeholder="Leave Date" min="{{ current_date }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label>Leave Reason</label>
+                <select class="form-control select2" name="lrs_msg" id="lrs_msg">
+                    <option value="">Select Leave Reason</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Casual">Casual</option>
+                    <option value="Personal">Personal</option>
+                </select>
+            </div>
+            <div class="form-group col-md-12" id="medical_img" style="display: none;">
+                <label>Medical Report</label>
+                <input type="file" name="medical_img" id="fileupload">
+            </div>
+            <div class="form-group col-md-6">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                        {% endif %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- /.card-body -->
+    <div class="card-footer text-center">
+        <button type="submit" class="btn btn-primary btn-block" id="ap_lv">Apply for Leave</button>
+    </div>
+</form>
+       </div>
+            <!-- /.card -->
+       <div class="card card-purple">
+          <div class="card-header">
+            <h3 class="card-title">Leave Apply History</h3>
+          </div>
+           <div class="table">
+           <table class="table">
+               <tr>
+                   <th>ID</th>
+                   <th>Leave Date</th>
+                   <th>Leave Message</th>
+                   <th>Leave Status</th>
+                   <th>Reason of the Rejection</th>
+               </tr>
+               {% for row in lv_data %}
+                    <tr>
+                        <td>{{ row.lrs_id }}</td>
+                        <td>{{ row.lrs_date }}</td>
+                        <td>{{ row.lrs_msg }}</td>
+                        <td>
+                            {% if row.lrs_status == 1 %}
+                                <span class="alert alert-success">Approved</span>
+                            {% elif row.lrs_status == 2 %}
+                                <span class="alert alert-danger">Rejected</span>
+                            {% else %}
+                                <span class="alert alert-info">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.reason_lv }}</td>
+                    </tr>
+               {% endfor %}
+           </table>
+           </div>
+        </div>
+       </div>
+      </div>
+    </div>
+  </section>
+    <!-- /.content -->
+{% endblock main_content %}
+{% block custom_js %}
+<script>
+    $(function () {
+        //Initialize Select2 Elements
+        $('.select2').select2();
+
+        // Show/hide medical image upload field based on leave reason selection
+        $('#lrs_msg').change(function() {
+            if ($(this).val() === 'Medical') {
+                $('#medical_img').show();
+            } else {
+                $('#medical_img').hide();
+            }
+        });
+    });
+</script>
+{% endblock custom_js %}

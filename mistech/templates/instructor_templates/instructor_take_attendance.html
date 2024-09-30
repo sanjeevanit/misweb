@@ -1,0 +1,310 @@
+{% extends 'instructor_templates/base_template.html' %}
+{% block page_title %}
+Take Attendance
+{% endblock page_title %}
+{% block custom_css %}
+<style>
+    .green-text {
+        color: green !important;  /* Set the font color to brown */
+    }
+
+    .brown-text {
+        color: brown !important;  /* Set the font color to brown */
+    }
+
+    .red-text {
+        color: red !important;  /* Set the font color to brown */
+    }
+
+</style>
+{% endblock custom_css %}
+{% block main_content %}
+    {% load static %}
+    <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+       <div class="col-md-12">
+            <!-- general form elements -->
+       <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">Take Attendance</h3>
+        </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+       <form id="attendanceForm" method="post" enctype="multipart/form-data">
+
+          {% csrf_token %}
+          <div class="card-body">
+            <div class="row g-3">
+
+            <div class="form-group col-md-4">
+                <label>Course</label>
+                <select class="form-control select2 select2-purple" name="c_name" id="c_name">
+                    {% for course_option in course %}
+                        <option value="{{ course_option.c_name }}">{{ course_option.c_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label>Subject</label>
+                <select class="form-control select2 select2-purple" name="sub_name" id="sub_name" data-url="{% url 'get_subject' %}">
+                    {% for subject_option in subject %}
+                        <option value="{{ subject_option.sub_name }}">{{ subject_option.sub_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label>Batch</label>
+                <select class="form-control select2 select2-purple" name="b_code" id="b_code">
+                    {% for batch_option in batch %}
+                        <option value="{{ batch_option.b_code }}">{{ batch_option.b_code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+             <div class="form-group col-md-4">
+                <label>Session Year </label>
+                <select class="form-control  select2 select2-purple" name="yr_id" id="yr_id">
+                    {% for session_yr in session_yr %}
+                      <option value="{{ session_yr.yr_id }}">{{ session_yr.session_start }} T0 {{ session_yr.session_end }}</option>
+                    {% endfor %}
+                </select>
+             </div>
+
+
+              <div class="form-group col-md-6">
+               {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+
+                </div>
+          </div>
+                <!-- /.card-body -->
+        <div class="card-footer text-center">
+            <button type="button" class="btn btn-success btn-lg" id="startRecognition">
+                <i class="fas fa-video"></i> <!-- Replace with an appropriate icon -->
+                Start Recognition
+            </button>
+            <br>
+            <p id="attendanceResult"></p>
+        </div>
+       </form>
+       </div>
+            <!-- /.card -->
+       </div>
+      </div>
+    </div>
+
+  </section>
+
+    <!-- /.content -->
+{% endblock main_content %}
+
+
+{% block custom_js %}
+<script>
+    document.getElementById("attendanceForm").addEventListener("submit", function(event) {
+        var b_code = document.getElementById("b_code").value;
+        if (b_code.trim() === "") {
+            alert("Batch code is missing");
+            event.preventDefault(); // Prevent form submission
+        }
+    });
+
+</script>
+<script>
+    $(function () {
+        // Initialize Select2 Elements
+        $('.select2').select2();
+
+        // Function to fetch subjects based on the selected course
+        function fetchSubjects(courseId) {
+            var subjectsDropdown = $('#sub_name');
+            $.ajax({
+                url: '{% url "get_subject" %}',
+                data: {'c_id': courseId},
+                dataType: 'json',
+                success: function (data) {
+                    subjectsDropdown.empty();
+                    $.each(data.subjects, function (index, subject) {
+                        subjectsDropdown.append('<option value="' + subject.sub_name + '">' + subject.sub_name + '</option>');
+                    });
+                    subjectsDropdown.trigger('change');
+                }
+            });
+        }
+
+        // Function to fetch batches based on the selected course
+ function fetchBatches(courseId) {
+    var batchesDropdown = $('#b_code');
+    $.ajax({
+        url: '{% url "get_batches" %}',
+        data: {'c_id': courseId},
+        dataType: 'json',
+        success: function (data) {
+            batchesDropdown.empty();
+            $.each(data.batches, function (index, batch) {
+                batchesDropdown.append('<option value="' + batch.b_code + '">' + batch.b_code + '</option>');
+            });
+            batchesDropdown.trigger('change');
+        }
+    });
+}
+
+        // Course selection change event
+        $('#c_name').on('change', function () {
+            var courseId = $(this).val();
+            fetchSubjects(courseId);
+            fetchBatches(courseId); // Fetch batches when the course changes
+        });
+
+        // Trigger the change event when the page loads with the default option selected
+        var defaultCourseId = $('#c_name').val();
+        fetchSubjects(defaultCourseId);
+        fetchBatches(defaultCourseId);
+
+    });
+
+</script>
+
+
+
+
+<style>
+    /* Add this style to create the animated face button effect */
+    #startRecognition {
+        animation: bounce 1s infinite; /* You can customize the animation duration and type */
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-20px); /* Adjust the bounce height */
+        }
+        60% {
+            transform: translateY(-10px); /* Adjust the bounce height */
+        }
+    }
+</style>
+
+
+<script>
+$("#startRecognition").click(function () {
+    // Get the CSRF token from the cookie
+    const csrfToken = getCookie('csrftoken');
+
+    // Add the CSRF token to the POST request data
+    $.ajax({
+        type: 'POST',
+        url: 'instructor_take_attendance',
+        data: {
+            'csrfmiddlewaretoken': csrfToken,
+            'sub_name': $('#sub_name').val(),
+            'c_name': $('#c_name').val(),
+            'b_code': $('#b_code').val(),
+            'yr_id': $('#yr_id').val(),
+        },
+        success: function (response) {
+            let color;
+            let alertSizeClass;
+
+            if (response.status === 'success') {
+                color = 'green';
+                alertSizeClass = 'custom-popup-success';
+                // Display success message in real-time
+                $("#attendanceResult").text(response.message).css('color', color);
+            } else if (response.status === 'warning') {
+                color = 'brown';
+                alertSizeClass = 'custom-popup-warning';
+                // Display warning message in real-time
+                $("#attendanceResult").text(response.message).css('color', color);
+            } else {
+                color = 'red';
+                alertSizeClass = 'custom-popup-error';
+                // Display error message in real-time
+                $("#attendanceResult").text(response.message).css('color', color);
+            }
+
+            Swal.fire({
+                title: response.message,
+                icon: response.status,
+                customClass: {
+                    popup: alertSizeClass,
+                },
+                onOpen: () => {
+                    // Add inline style for the message element
+                    const messageElement = document.querySelector('.swal2-popup .swal2-content');
+                    if (messageElement) {
+                        messageElement.style.color = color;
+                    }
+                },
+            });
+        },
+        error: function (response) {
+            console.log(response.responseJSON);
+
+            let color, message, alertSizeClass;
+
+            if (response.status === 'warning' && response.responseJSON && 'error' in response.responseJSON) {
+                message = response.responseJSON.error;
+                color = 'brown';
+                alertSizeClass = 'custom-popup-warning';
+            } else {
+                message = response.message;
+                color = 'red';
+                alertSizeClass = 'custom-popup-error';
+            }
+
+            Swal.fire({
+                title: message,
+                icon: 'warning',
+                customClass: {
+                    popup: alertSizeClass,
+                },
+                onOpen: () => {
+                    // Add inline style for the message element
+                    const messageElement = document.querySelector('.swal2-popup .swal2-content');
+                    if (messageElement) {
+                        messageElement.style.color = color;
+                    }
+                },
+            });
+
+            // Display error message in real-time
+            $("#attendanceResult").text(message).css('color', color);
+        },
+    });
+});
+
+// Function to get the CSRF token from the cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+</script>
+
+
+{% endblock custom_js %}
+

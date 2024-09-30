@@ -1,0 +1,148 @@
+{% extends 'examiner_templates/base_template.html' %}
+
+{% block page_title %}
+    <h6>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ examiner_home }}">Home</a></li>
+                <li class="breadcrumb-item active">Exam Attendance Report</li>
+            </ol>
+        </nav>
+    </h6>
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-purple">
+                    <div class="card-header">
+                        <h3 class="card-title">Attendance by Day</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="search-form" method="GET" action="{% url 'generate_daily_exam_report' %}">
+                            <div class="row g-3">
+                                <div class="form-group col-md-3">
+                                    <label>Select Date</label>
+                                    <input type="date" class="form-control" id="datepicker" name="ae_date" placeholder="Select Date">
+                                </div>
+<div class="form-group col-md-3">
+    <label for="ex_name">Select Exam:</label>
+    <select class="form-control select2 select2-purple" id="ex_name" name="ex_name">
+        {% for exam_name in exam_names %}
+            <option value="{{ exam_name }}">{{ exam_name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+
+                                <div class="form-group col-md-3">
+                                    <label for="course_name">Select Course:</label>
+                                    <select class="form-control select2 select2-purple" id="course_name" name="c_name">
+                                        <!-- Populate options with course names -->
+                                        {% for course in courses %}
+                                            <option value="{{ course.pk }}">{{ course.c_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="subject_name">Select Subject:</label>
+                                    <select class="form-control select2 select2-purple" id="subject_name" name="subject_name">
+                                        <!-- Options will be dynamically populated via JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <div class="col-md-12">
+                                        <label></label>
+                                        <div class="row">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-search"></i>
+                                                Search
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <hr>
+                        <div class="row">
+                            <div  class="col-md-12">
+<table class="table table-bordered">
+    <thead>
+        <tr>
+
+            <th>Student ID</th>
+            <th>Attendance Status</th>
+            <th>Batch</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in attendance_data %}
+            <tr>
+
+                <td>{{ record.st_id }}</td>
+                <td>{{ record.status }}</td>
+                <td>{{ record.b_id }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3" class="text-center"></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <a href="{% url 'exam_pdf' %}?ae_date={{ ae_date }}&ex_name={{ ex_name }}"
+                                    class="btn btn-success"><i class="fas fa-file-csv"></i> Export to PDF</a>
+                                <a href="{% url 'exam_csv' %}?ae_date={{ ae_date }}&ex_name={{ ex_name }}"
+                                    class="btn btn-success"><i class="fas fa-file-pdf"></i> Export to CSV</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    $(function () {
+        // Initialize Select2 Elements
+        $('.select2').select2();
+
+        function fetchSubjects(courseId) {
+            var subjectsDropdown = $('#subject_name');
+            $.ajax({
+                url: '{% url "get_subjects" %}',
+                data: {'c_id': courseId},
+                dataType: 'json',
+                success: function (data) {
+                    subjectsDropdown.empty();
+                    $.each(data.subjects, function (index, subject) {
+                        subjectsDropdown.append('<option value="' + subject.sub_id + '">' + subject.sub_name + '</option>');
+                    });
+                    subjectsDropdown.trigger('change');
+                }
+            });
+        }
+
+
+        $('#course_name').on('change', function () {
+            var courseId = $(this).val();
+            fetchSubjects(courseId);
+        });
+
+        // Trigger the change event when the page loads with the default option selected
+        var defaultCourseId = $('#course_name').val();
+        fetchSubjects(defaultCourseId);
+    });
+</script>
+
+
+{% endblock custom_js %}
